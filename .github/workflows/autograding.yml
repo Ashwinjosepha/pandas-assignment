@@ -1,0 +1,88 @@
+name: GitHub Classroom Autograding
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install pandas
+
+      # =========================
+      # AUTOGRADING TESTS
+      # =========================
+
+      - name: Test 1 - Load Data
+        id: test1
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: "Load CSV File"
+          command: |
+            python -c "import assignment as a; import pandas as pd; df=a.load_data(); assert isinstance(df, pd.DataFrame)"
+          timeout: 10
+          max-score: 2
+
+      - name: Test 2 - Average Marks
+        id: test2
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: "Average Marks"
+          command: |
+            python -c "import assignment as a; df=a.load_data(); assert round(a.average_marks(df),2)==67.5"
+          timeout: 10
+          max-score: 2
+
+      - name: Test 3 - Top Student
+        id: test3
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: "Top Student"
+          command: |
+            python -c "import assignment as a; df=a.load_data(); assert a.top_student(df)=='Alice'"
+          timeout: 10
+          max-score: 2
+
+      - name: Test 4 - Passed Students
+        id: test4
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: "Filter Passed Students"
+          command: |
+            python -c "import assignment as a; df=a.load_data(); assert all(a.passed_students(df)['marks']>=50)"
+          timeout: 10
+          max-score: 2
+
+      - name: Test 5 - Grade Column
+        id: test5
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: "Add Grade Column"
+          command: |
+            python -c "import assignment as a; df=a.load_data(); df2=a.add_grade(df.copy()); assert 'grade' in df2.columns"
+          timeout: 10
+          max-score: 2
+
+      # =========================
+      # RESULTS
+      # =========================
+
+      - name: Autograding Reporter
+        uses: classroom-resources/autograding-grading-reporter@v1
+        env:
+          TEST1_RESULTS: "${{ steps.test1.outputs.result }}"
+          TEST2_RESULTS: "${{ steps.test2.outputs.result }}"
+          TEST3_RESULTS: "${{ steps.test3.outputs.result }}"
+          TEST4_RESULTS: "${{ steps.test4.outputs.result }}"
+          TEST5_RESULTS: "${{ steps.test5.outputs.result }}"
