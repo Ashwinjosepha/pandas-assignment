@@ -9,6 +9,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # =========================
+      # SETUP
+      # =========================
+
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -21,10 +25,11 @@ jobs:
         run: pip install pandas
 
       # =========================
-      # AUTOGRADING TESTS
+      # TEST CASES
       # =========================
 
-      - name: Test 1 - Load Data
+      # ✅ Test 1: Load CSV
+      - name: Test 1 - Load CSV
         id: test1
         uses: classroom-resources/autograding-command-grader@v1
         with:
@@ -34,16 +39,18 @@ jobs:
           timeout: 10
           max-score: 2
 
+      # ✅ Test 2: Average Marks (FIXED)
       - name: Test 2 - Average Marks
         id: test2
         uses: classroom-resources/autograding-command-grader@v1
         with:
           test-name: "Average Marks"
           command: |
-            python -c "import assignment as a; df=a.load_data(); assert round(a.average_marks(df),2)==67.5"
+            python -c "import assignment as a; import pandas as pd; df=a.load_data(); expected=pd.read_csv('data.csv')['marks'].mean(); assert abs(a.average_marks(df)-expected) < 1e-6"
           timeout: 10
           max-score: 2
 
+      # ✅ Test 3: Top Student
       - name: Test 3 - Top Student
         id: test3
         uses: classroom-resources/autograding-command-grader@v1
@@ -54,17 +61,19 @@ jobs:
           timeout: 10
           max-score: 2
 
+      # ✅ Test 4: Passed Students
       - name: Test 4 - Passed Students
         id: test4
         uses: classroom-resources/autograding-command-grader@v1
         with:
           test-name: "Filter Passed Students"
           command: |
-            python -c "import assignment as a; df=a.load_data(); assert all(a.passed_students(df)['marks']>=50)"
+            python -c "import assignment as a; df=a.load_data(); result=a.passed_students(df); assert all(result['marks']>=50)"
           timeout: 10
           max-score: 2
 
-      - name: Test 5 - Grade Column
+      # ✅ Test 5: Add Grade Column
+      - name: Test 5 - Add Grade Column
         id: test5
         uses: classroom-resources/autograding-command-grader@v1
         with:
@@ -75,11 +84,13 @@ jobs:
           max-score: 2
 
       # =========================
-      # RESULTS
+      # REPORT RESULTS (FIXED)
       # =========================
 
       - name: Autograding Reporter
         uses: classroom-resources/autograding-grading-reporter@v1
+        with:
+          runners: test1,test2,test3,test4,test5
         env:
           TEST1_RESULTS: "${{ steps.test1.outputs.result }}"
           TEST2_RESULTS: "${{ steps.test2.outputs.result }}"
